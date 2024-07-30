@@ -3,7 +3,7 @@
 
 from .rtdetr import RTDETR
 from .matcher import HungarianMatcher
-from .hybrid_encoder import HybridEncoder, HybridNAEncoder
+from .hybrid_encoder import HybridEncoder, HybridNAEncoder, HybridNA1DEncoder
 from .rtdetr_decoder import RTDETRTransformer
 from .rtdetr_criterion import RTDETRCriterion
 from .rtdetr_postprocessor import RTDETRPostProcessor

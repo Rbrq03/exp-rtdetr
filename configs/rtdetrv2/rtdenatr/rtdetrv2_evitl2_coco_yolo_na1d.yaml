@@ -11,7 +11,7 @@ output_dir: ../output/rtdetrv2_evitl2_coco_yolo_na2d
 
 RTDETR: 
   backbone: EfficientViT
-  encoder: HybridNAEncoder
+  encoder: HybridNA1DEncoder
 
 
 EfficientViT:
@@ -22,13 +22,25 @@ EfficientViT:
   pretrained: True 
 
 
-HybridNA1DEncoder:
-  # intra
+HybridNAEncoder:
   in_channels: [128, 256, 512]
+  feat_strides: [8, 16, 32]
+
+  # intra
   hidden_dim: 256
+  use_encoder_idx: [2]
+  num_encoder_layers: 1
+  nhead: 8
   dim_feedforward: 1024
-  kernel_size: 31
+  dropout: 0.
+  enc_act: 'gelu'
   
+  # cross
+  expansion: 1.0
+  depth_mult: 1
+  act: 'silu'
+
+  kernel_size: 31
 
 
 RTDETRTransformerv2:

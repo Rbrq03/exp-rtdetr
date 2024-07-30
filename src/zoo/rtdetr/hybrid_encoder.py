@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .na import NATBlock
+from .na import NATBlock, NeighborhoodMA1D
 
 from .utils import get_activation
 
@@ -144,6 +144,59 @@ class TransformerEncoderLayer(nn.Module):
 
         self.self_attn = nn.MultiheadAttention(
             d_model, nhead, dropout, batch_first=True
+        )
+
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
+
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
+        self.activation = get_activation(activation)
+
+    @staticmethod
+    def with_pos_embed(tensor, pos_embed):
+        return tensor if pos_embed is None else tensor + pos_embed
+
+    def forward(self, src, src_mask=None, pos_embed=None) -> torch.Tensor:
+        residual = src
+        if self.normalize_before:
+            src = self.norm1(src)
+        q = k = self.with_pos_embed(src, pos_embed)
+        src, _ = self.self_attn(q, k, value=src, attn_mask=src_mask)
+
+        src = residual + self.dropout1(src)
+        if not self.normalize_before:
+            src = self.norm1(src)
+
+        residual = src
+        if self.normalize_before:
+            src = self.norm2(src)
+        src = self.linear2(self.dropout(self.activation(self.linear1(src))))
+        src = residual + self.dropout2(src)
+        if not self.normalize_before:
+            src = self.norm2(src)
+        return src
+
+
+class NA1DEncoderLayer(nn.Module):
+    def __init__(
+        self,
+        d_model,
+        nhead,
+        kernel_size=31,
+        dim_feedforward=2048,
+        dropout=0.1,
+        activation="relu",
+        normalize_before=False,
+    ):
+        super().__init__()
+        self.normalize_before = normalize_before
+
+        self.self_attn = NeighborhoodMA1D(
+            dim=d_model, num_heads=nhead, dropout=dropout, kernel_size=kernel_size
         )
 
         self.linear1 = nn.Linear(d_model, dim_feedforward)
@@ -594,6 +647,7 @@ class HybridNA1DEncoder(nn.Module):
         nhead=8,
         dim_feedforward=1024,
         dropout=0.0,
+        kernel_size=31,
         enc_act="gelu",
         use_encoder_idx=[2],
         num_encoder_layers=1,
@@ -643,12 +697,13 @@ class HybridNA1DEncoder(nn.Module):
             self.input_proj.append(proj)
 
         # encoder transformer
-        encoder_layer = TransformerEncoderLayer(
+        encoder_layer = NA1DEncoderLayer(
             hidden_dim,
             nhead=nhead,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
             activation=enc_act,
+            kernel_size=kernel_size,
         )
 
         self.encoder = nn.ModuleList(

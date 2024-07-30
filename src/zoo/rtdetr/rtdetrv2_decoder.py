@@ -6,6 +6,7 @@ import copy
 import functools
 from collections import OrderedDict
 
+from altair import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -383,6 +384,8 @@ class RTDETRTransformerv2(nn.Module):
         aux_loss=True,
         cross_attn_method="default",
         query_select_method="default",
+        na=False,
+        kernel_size=31,
     ):
         super().__init__()
         assert len(feat_channels) <= num_levels
@@ -420,6 +423,8 @@ class RTDETRTransformerv2(nn.Module):
             num_levels,
             num_points,
             cross_attn_method=cross_attn_method,
+            na=na,
+            kernel_size=kernel_size,
         )
         self.decoder = TransformerDecoder(
             hidden_dim, decoder_layer, num_layers, eval_idx
