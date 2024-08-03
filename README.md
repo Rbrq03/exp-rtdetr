@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 pls modify the dataset path in `configs/dataset/coco_detection.yml`
 
-# EXP-OfficialLRBS-RTDETR-EfficientViT-L2
+### EXP-OfficialLRBS-RTDETR-EfficientViT-L2
 
 ```
 bash train.sh
