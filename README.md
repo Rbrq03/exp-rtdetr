@@ -14,6 +14,10 @@ pip install -r requirements.txt
 
 ## exp
 
-### exp1-EfficientViT-L2 NA1D Encoder
+pls modify the dataset path in `configs/dataset/coco_detection.yml`
 
-### exp2-EfficientViT-L2 NA Decoder
+# EXP-OfficialLRBS-RTDETR-EfficientViT-L2
+
+```
+bash train.sh
+```

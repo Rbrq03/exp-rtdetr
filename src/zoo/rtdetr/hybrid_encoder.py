@@ -196,7 +196,7 @@ class NA1DEncoderLayer(nn.Module):
         self.normalize_before = normalize_before
 
         self.self_attn = NeighborhoodMA1D(
-            dim=d_model, num_heads=nhead, dropout=dropout, kernel_size=kernel_size
+            dim=d_model, num_heads=nhead, proj_drop=dropout, kernel_size=kernel_size
         )
 
         self.linear1 = nn.Linear(d_model, dim_feedforward)
@@ -218,7 +218,7 @@ class NA1DEncoderLayer(nn.Module):
         if self.normalize_before:
             src = self.norm1(src)
         q = k = self.with_pos_embed(src, pos_embed)
-        src, _ = self.self_attn(q, k, value=src, attn_mask=src_mask)
+        src = self.self_attn(q, k, src)
 
         src = residual + self.dropout1(src)
         if not self.normalize_before:
@@ -599,6 +599,7 @@ class HybridNAEncoder(nn.Module):
 
     def forward(self, feats):
         assert len(feats) == len(self.in_channels)
+
         proj_feats = [self.input_proj[i](feat) for i, feat in enumerate(feats)]
 
         # encoder

@@ -216,11 +216,13 @@ class TransformerDecoderLayer(nn.Module):
     ):
         super(TransformerDecoderLayer, self).__init__()
 
+        self.na = na
         # self attention
-        if na:
+        if self.na:
             self.self_attn = NeighborhoodMA1D(
                 dim=d_model, num_heads=n_head, kernel_size=kernel_size
             )
+
         else:
             self.self_attn = nn.MultiheadAttention(
                 d_model, n_head, dropout=dropout, batch_first=True
@@ -268,7 +270,10 @@ class TransformerDecoderLayer(nn.Module):
         # self attention
         q = k = self.with_pos_embed(target, query_pos_embed)
 
-        target2, _ = self.self_attn(q, k, value=target, attn_mask=attn_mask)
+        if self.na:
+            target2 = self.self_attn(q, k, target)
+        else:
+            target2, _ = self.self_attn(q, k, value=target, attn_mask=attn_mask)
         target = target + self.dropout1(target2)
         target = self.norm1(target)
 
