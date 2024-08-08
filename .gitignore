@@ -170,6 +170,7 @@ cython_debug/
 *.engine
 *.json
 *.tar
+*.pt
 rtdetr_pytorch/output/*
 rtdetr_pytorch/dataset/*
 engine/*
