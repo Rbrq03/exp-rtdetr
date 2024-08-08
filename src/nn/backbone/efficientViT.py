@@ -1,7 +1,11 @@
-from gc import freeze
+from numpy import arange
+import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from ...core import register
+
+from .efficientvit.models.nn import ConvLayer
 
 from .efficientvit.models.efficientvit.backbone import (
     efficientvit_backbone_l2,
@@ -25,7 +29,8 @@ build_enat_fuction = {
 }
 
 pretrained_urls = {
-    "l2": "/opt/data/private/hjn/fna-detection/RT-DETR/yolov10/l2-r384.pt"
+    "l2": "/opt/data/private/hjn/fna-detection/RT-DETR/yolov10/l2-r384.pt",
+    "l1": "/opt/data/private/hjn/fna-detection/exp/l1-r224.pt",
 }
 
 
@@ -38,6 +43,20 @@ class EfficientViT(nn.Module):
             return_idx=return_idx, freeze_norm=freeze_norm, freeze_at=freeze_at, add=add
         )
 
+        self.add = add
+
+        if self.add:
+            self.channel_convs = []
+            for i in range(len(return_idx)):
+                conv_layer = ConvLayer(
+                    in_channels=self.model.width_list[return_idx[i]],
+                    out_channels=self.model.width_list[return_idx[0]],
+                    kernel_size=1,
+                    act_func=None,
+                )
+                setattr(self, f"channel_convs{i}", conv_layer)
+            self.average_pool = nn.AvgPool2d(kernel_size=4, stride=4)
+
         if pretrained:
             state = torch.load(pretrained_urls[name])["state_dict"]
             new_state_dict = {}
@@ -49,7 +68,30 @@ class EfficientViT(nn.Module):
             print("Load EfficientViT Weights")
 
     def forward(self, x):
-        return self.model(x)
+        if self.add == False:
+            return self.model(x)
+        else:
+            output = self.model(x)
+            final_stage_fea_shape = output[0].shape[2:]
+            final_stage_fea = None
+            for id, x in enumerate(output):
+                conv_layer = getattr(self, f"channel_convs{id}")
+                x = conv_layer(x)
+                x = (
+                    x
+                    if id == 0
+                    else F.interpolate(
+                        x,
+                        size=final_stage_fea_shape,
+                        mode="bilinear",
+                        align_corners=False,
+                    )
+                )
+                final_stage_fea = x if final_stage_fea == None else final_stage_fea + x
+
+            final_stage_fea = self.average_pool(final_stage_fea)
+            output[-1] = final_stage_fea
+            return output
 
 
 @register()

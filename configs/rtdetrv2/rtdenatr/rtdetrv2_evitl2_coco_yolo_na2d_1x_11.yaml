@@ -7,11 +7,11 @@ __include__: [
 ]
 
 
-output_dir: ../output/test
+output_dir: ../output/rtdetrv2_evitl2_coco_yolo_na2d_1x_11
 
 RTDETR: 
   backbone: EfficientViT
-  encoder: HybridNA1DEncoder
+  encoder: HybridNAEncoder
 
 
 EfficientViT:
@@ -22,7 +22,8 @@ EfficientViT:
   pretrained: True 
 
 
-HybridNA1DEncoder:
+
+HybridNAEncoder:
   in_channels: [128, 256, 512]
   feat_strides: [8, 16, 32]
 
@@ -40,7 +41,8 @@ HybridNA1DEncoder:
   depth_mult: 1
   act: 'silu'
 
-  kernel_size: 31
+  kernel_size: 11
+
 
 
 RTDETRTransformerv2:
@@ -61,4 +63,4 @@ optimizer:
   betas: [0.9, 0.999]
   weight_decay: 0.0001
 
-epoches: 1
+epochs: 12

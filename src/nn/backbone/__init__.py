@@ -18,3 +18,5 @@ from .csp_darknet import CSPDarkNet, CSPPAN
 from .hgnetv2 import HGNetv2
 
 from .efficientViT import EfficientViT, EfficientNAT
+
+from .Fastvit import FastViT

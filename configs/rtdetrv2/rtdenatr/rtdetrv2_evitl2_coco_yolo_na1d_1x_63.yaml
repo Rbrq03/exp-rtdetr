@@ -40,7 +40,7 @@ HybridNA1DEncoder:
   depth_mult: 1
   act: 'silu'
 
-  kernel_size: 31
+  kernel_size: 63
 
 
 RTDETRTransformerv2:
@@ -60,5 +60,6 @@ optimizer:
   lr: 0.0004
   betas: [0.9, 0.999]
   weight_decay: 0.0001
+
 
 epoches: 1

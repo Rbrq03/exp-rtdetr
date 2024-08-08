@@ -166,7 +166,13 @@ cython_debug/
 *.pdparams
 *.onnx
 *.zip
+*.log
 *.engine
 *.json
+*.tar
 rtdetr_pytorch/output/*
 rtdetr_pytorch/dataset/*
+engine/*
+output/*
+log/*
+demo.py

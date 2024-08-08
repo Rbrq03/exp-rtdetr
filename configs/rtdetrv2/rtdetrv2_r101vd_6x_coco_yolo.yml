@@ -1,38 +1,28 @@
 __include__: [
-  '../../dataset/coco_detection.yml',
-  '../../runtime.yml',
-  '../include/dataloader.yml',
-  '../include/optimizer.yml',
-  '../include/rtdetrv2_r50vd.yml',
+  '../dataset/coco_detection.yml',
+  '../runtime.yml',
+  './include/dataloader.yml',
+  './include/optimizer.yml',
+  './include/rtdetrv2_r50vd.yml',
 ]
 
 
+# output_dir: ./output/rtdetrv2_r101vd_6x_coco
 output_dir: ../output/test
 
-RTDETR: 
-  backbone: EfficientViT
-  decoder: RTDETRTransformerv2
 
-
-EfficientViT:
-  name: l2
-  freeze_at: 0
-  return_idx: [2, 3, 4]
-  freeze_norm: True
-  pretrained: True 
+PResNet:
+  depth: 101
 
 
 HybridEncoder:
   # intra
-  in_channels: [128, 256, 512]
   hidden_dim: 256
   dim_feedforward: 1024
-  
 
 
 RTDETRTransformerv2:
   feat_channels: [256, 256, 256]
-  na: True
 
 
 optimizer:
@@ -50,4 +40,4 @@ optimizer:
   weight_decay: 0.0001
 
 
-epoches: 1
+epoches: 72

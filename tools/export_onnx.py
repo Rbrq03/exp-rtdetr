@@ -47,9 +47,11 @@ def main(
 
     model = Model()
 
-    data = torch.rand(1, 3, 640, 640)
-    size = torch.tensor([[640, 640]])
-    _ = model(data, size)
+    model.to("cuda:0")
+
+    data = torch.rand(1, 3, 640, 640).to("cuda:0")
+    size = torch.tensor([[640, 640]]).to("cuda:0")
+    # _ = model(data, size)
 
     dynamic_axes = {
         "images": {

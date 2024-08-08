@@ -277,6 +277,7 @@ class HybridEncoder(nn.Module):
         act="silu",
         eval_spatial_size=None,
         version="v2",
+        add=False,
     ):
         super().__init__()
         self.in_channels = in_channels
@@ -288,6 +289,10 @@ class HybridEncoder(nn.Module):
         self.eval_spatial_size = eval_spatial_size
         self.out_channels = [hidden_dim for _ in range(len(in_channels))]
         self.out_strides = feat_strides
+        self.add = add
+
+        if self.add:
+            self.avg_pool = nn.AvgPool2d(kernel_size=4, stride=4)
 
         # channel projection
         self.input_proj = nn.ModuleList()
@@ -401,9 +406,31 @@ class HybridEncoder(nn.Module):
             [out_w.sin(), out_w.cos(), out_h.sin(), out_h.cos()], dim=1
         )[None, :, :]
 
+    def add_merge(self, feats):
+        proj_feats_shape = feats[0].shape[2:]
+
+        final_stage_feat = feats[0]
+
+        for feat in feats[1:]:
+            final_stage_feat = final_stage_feat + F.interpolate(
+                feat,
+                size=proj_feats_shape,
+                mode="bilinear",
+                align_corners=False,
+            )
+
+        final_stage_feat = self.avg_pool(final_stage_feat)
+
+        feats[2] = final_stage_feat
+
+        return feats
+
     def forward(self, feats):
         assert len(feats) == len(self.in_channels)
         proj_feats = [self.input_proj[i](feat) for i, feat in enumerate(feats)]
+
+        if self.add:
+            proj_feats = self.add_merge(proj_feats)
 
         # encoder
         if self.num_encoder_layers > 0:

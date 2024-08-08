@@ -8,7 +8,7 @@ __include__: [
 
 
 # output_dir: ./output/rtdetrv2_r101vd_6x_coco
-output_dir: ./output/test
+output_dir: ../output/test
 
 
 PResNet:
@@ -17,12 +17,12 @@ PResNet:
 
 HybridEncoder:
   # intra
-  hidden_dim: 384
-  dim_feedforward: 2048
+  hidden_dim: 256
+  dim_feedforward: 1024
 
 
 RTDETRTransformerv2:
-  feat_channels: [384, 384, 384]
+  feat_channels: [256, 256, 256]
 
 
 optimizer:
@@ -30,14 +30,11 @@ optimizer:
   params: 
     - 
       params: '^(?=.*backbone)(?!.*norm|bn).*$'
-      lr: 0.000001
+      lr: 0.000004
     - 
       params: '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bn)).*$'
       weight_decay: 0.
 
-  lr: 0.0001
+  lr: 0.0004
   betas: [0.9, 0.999]
   weight_decay: 0.0001
-
-
-epoches: 1

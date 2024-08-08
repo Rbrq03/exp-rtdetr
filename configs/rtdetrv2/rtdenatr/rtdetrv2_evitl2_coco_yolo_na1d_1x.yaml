@@ -7,7 +7,7 @@ __include__: [
 ]
 
 
-output_dir: ../output/rtdetrv2_evitl2_coco_yolo_na2d
+output_dir: ../output/rtdetrv2_evitl2_coco_yolo_na1d_1x_31
 
 RTDETR: 
   backbone: EfficientViT
